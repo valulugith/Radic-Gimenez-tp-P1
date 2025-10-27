@@ -1,5 +1,5 @@
 package juego;
-
+//para el commit de prueba
 import java.awt.Image;
 
 import entorno.Entorno;

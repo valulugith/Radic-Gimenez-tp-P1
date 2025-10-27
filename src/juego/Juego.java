@@ -68,9 +68,6 @@ public class Juego extends InterfaceJuego
 			        }
 			    }
 			}
-			
-			//bara de menu
-			entorno.dibujarRectangulo(400, 75, 400, 150, 0, new Color(139, 69, 19));
 
 			// Dibujar WallNuts
 		
