@@ -68,6 +68,9 @@ public class Juego extends InterfaceJuego
 			        }
 			    }
 			}
+			
+			//bara de menu
+			entorno.dibujarRectangulo(400, 75, 400, 150, 0, new Color(139, 69, 19));
 
 			// Dibujar WallNuts
 		
@@ -100,6 +103,7 @@ public class Juego extends InterfaceJuego
 		}
 
 		if(entorno.sePresionoBoton(entorno.BOTON_IZQUIERDO)) {
+			//Para las plantas
 			for(int ite=0; ite < plantas.length; ite ++) {
 				if(plantas[ite] != null) {
 					if(plantas[ite].encima(entorno.mouseX(),entorno.mouseY())){
@@ -110,10 +114,23 @@ public class Juego extends InterfaceJuego
 					}
 				}
 			}
+			//para las papas
+			for(int ite=0; ite < wallnuts.length; ite ++) { 
+				if(wallnuts[ite] != null) {
+					
+					//si NO está plantada se puede
+					if(wallnuts[ite].encima(entorno.mouseX(),entorno.mouseY()) && !wallnuts[ite].plantada){ 
+						wallnuts[ite].seleccionada=true;
+					} else {
+						wallnuts[ite].seleccionada=false;
+					}
+				}
+			}
 		}
 
 
 		if(entorno.estaPresionado(entorno.BOTON_IZQUIERDO)) {
+			//para las plantas
 			for(int ite=0; ite < plantas.length;ite++) {
 
 				if(plantas[ite] != null && plantas[ite].seleccionada) {
@@ -123,13 +140,21 @@ public class Juego extends InterfaceJuego
 					cua.ocupado[indiceX][indiceY] = false;
 				}
 			}
+			//para las papas
+			for(int ite=0; ite < wallnuts.length;ite++) {
+				if(wallnuts[ite] != null && wallnuts[ite].seleccionada) {
+					wallnuts[ite].arrastrar(entorno.mouseX(), entorno.mouseY());
+				}
+			}
 		}
 
 
 		if(entorno.seLevantoBoton(entorno.BOTON_IZQUIERDO)) {
+			//para las plantas
 			for(int ite=0; ite < this.plantas.length;ite++) {
 				if (plantas[ite] != null) {
 					if(plantas[ite].seleccionada) {
+						plantas[ite].seleccionada = false; //si la planta no esta seleccionada no la muestra
 						if(entorno.mouseY() < 70 && !plantas[ite].plantada ) {
 							plantas[ite].arrastrar(50, 50);
 
@@ -145,6 +170,39 @@ public class Juego extends InterfaceJuego
 						}
 					}
 
+				}
+			}
+			//para las papas
+			for(int ite=0; ite < this.wallnuts.length;ite++) {
+				if (wallnuts[ite] != null && wallnuts[ite].seleccionada) {
+					wallnuts[ite].seleccionada = false; 
+					
+					// Copia la misma lógica de plantar que usaste para 'plantas'
+					// pero ajustando la posición original de la papa
+					if(entorno.mouseY() < 70 && !wallnuts[ite].plantada ) {
+						wallnuts[ite].arrastrar(200, 50); // Posición original de la papa
+
+					}else {
+						int indiceX = cua.cercanoL(entorno.mouseX(), entorno.mouseY()).x;
+						int indiceY = cua.cercanoL(entorno.mouseX(), entorno.mouseY()).y;
+				
+						
+						// 2. Verificamos si está ocupado
+						boolean estaOcupado = cua.ocupado[indiceX][indiceY];
+
+						if (!estaOcupado) {
+							// ¡Se puede plantar!
+							wallnuts[ite].arrastrar(cua.corX[indiceX],cua.corY[indiceY]);
+							cua.ocupado[indiceX][indiceY] = true;
+							wallnuts[ite].plantada = true;
+							
+						} else {
+							// No se puede plantar (es verde O está ocupado)
+							// La devolvemos a la barra
+							wallnuts[ite].arrastrar(200, 50);
+						}
+						// ***************************************
+					}
 				}
 			}
 		}
@@ -234,11 +292,17 @@ public class Juego extends InterfaceJuego
 		        }
 		    }
 		}
+		//para que cree las plantas y papas
+		//llamo los metodos de plantas
 		if(!plantasNoPlantadas(this.plantas)) {
 			crearPlanta(this.plantas);
 		}
+		//llamo los metodos de las papas
+		if(!wallnutsNoPlantados(this.wallnuts)) {
+			crearWallNut(this.wallnuts);
+		}
 	}
-
+//plantas
 	public boolean plantasNoPlantadas(Planta[] pl) {
 		for(Planta p:pl) {
 			if(p != null && !p.plantada) {
@@ -257,7 +321,26 @@ public class Juego extends InterfaceJuego
 			}
 		}
 	}
+//papas
+	public boolean wallnutsNoPlantados(WallNut[] wn) {
+		for(WallNut w : wn) {
+			if(w != null && !w.plantada) {
+				return true;
+			}
+		}
+		return false;
+	}
 
+	// Copia de 'crearPlanta' pero para WallNut
+	private void crearWallNut(WallNut[] wn) {
+		for(int x=0; x < wn.length;x++) {
+			if(wn[x] == null) {
+				// Asegurate de poner la posición original de la papa (200, 50)
+				wn[x] = new WallNut(200, 50, entorno); 
+				return;
+			}
+		}
+	}
 
 	@SuppressWarnings("unused")
 	public static void main(String[] args)

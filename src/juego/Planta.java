@@ -16,8 +16,8 @@ public class Planta {
 		this.y = y;
 		this.e = e;
 		this.escala = 0.08;
-		this.imagen = Herramientas.cargarImagen("planta.png");
-		this.imagenSeleccionada = Herramientas.cargarImagen("plantaSeleccionada.png");
+		this.imagen = Herramientas.cargarImagen("plantita.png");
+		this.imagenSeleccionada = Herramientas.cargarImagen("plantitaSeleccionada.png");
 		this.seleccionada = false;
 		this.plantada = false;
 	}
@@ -25,8 +25,11 @@ public class Planta {
 	public void dibujar() {
 		if(seleccionada) {
 			e.dibujarImagen(imagenSeleccionada, x, y, 0,escala);
+		} else {
+			// Si NO está seleccionada, dibujá la imagen normal
+			e.dibujarImagen(imagen, x, y, 0, escala);
 		}
-		e.dibujarImagen(imagen, x, y, 0, escala);
+		
 	}
 	
 	public double distancia(double x1, double y1, double x2, double y2) {

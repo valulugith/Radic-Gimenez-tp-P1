@@ -17,8 +17,8 @@ public class Cuadricula {
 	  this.x=x;
 	  this.y=y;
 	  this.e=e;
-	  clara=Herramientas.cargarImagen("pasto1.png");
-	  oscura=Herramientas.cargarImagen("pasto2.png");
+	  clara=Herramientas.cargarImagen("pasto11.png");
+	  oscura=Herramientas.cargarImagen("pasto12.png");
 	  this.escala=0.52;
 	  int[]aux1= {150, 250,350,450,550};
 	  int[]aux2= {50,150, 250,350,450,550,650,750};

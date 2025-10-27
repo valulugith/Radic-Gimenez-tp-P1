@@ -14,7 +14,7 @@ public class Bala {
         this.x = x;
         this.y = y;
         this.e = e;
-        this.velocidad = 4;
+        this.velocidad = 2;//
         this.imagen = Herramientas.cargarImagen("bala.png");
         this.activa = true;
     }
