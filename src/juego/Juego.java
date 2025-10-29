@@ -17,6 +17,7 @@ public class Juego extends InterfaceJuego
 	Bala[] balas;
 	RoseBlade[] roseblades;
 	WallNut[] wallnuts;
+	Zombies[] zombies;
    
 
 	Juego()
@@ -37,11 +38,14 @@ public class Juego extends InterfaceJuego
 		this.entorno.iniciar();
 		
 		this.roseblades = new RoseBlade[10];
+		//zombies
 		this.wallnuts = new WallNut[10];
 
 		// Crea una carta de cada tipo arriba del todo
 		this.roseblades[0] = new RoseBlade(100, 50, entorno);
 		this.wallnuts[0] = new WallNut(200, 50, entorno);
+		
+		this.zombies = new Zombies[20];
 	}
 
 	/**
@@ -129,14 +133,18 @@ public class Juego extends InterfaceJuego
 		if(entorno.estaPresionado(entorno.BOTON_IZQUIERDO)) {
 			//para las plantas
 			for(int ite=0; ite < plantas.length;ite++) {
-
-				if(plantas[ite] != null && plantas[ite].seleccionada) {
+				//si no es nullo, esta seleccionada y no está plantada lo muevo
+				if(plantas[ite] != null && plantas[ite].seleccionada && !plantas[ite].plantada) {
 					int indiceX = cua.cercano(entorno.mouseX(), entorno.mouseY()).x;
 					int indiceY = cua.cercano(entorno.mouseX(), entorno.mouseY()).y;
 					plantas[ite].arrastrar(entorno.mouseX(), entorno.mouseY());
 					cua.ocupado[indiceX][indiceY] = false;
 				}
 			}
+			
+			
+			
+			
 			//para las papas
 			for(int ite=0; ite < wallnuts.length;ite++) {
 				if(wallnuts[ite] != null && wallnuts[ite].seleccionada) {
@@ -150,7 +158,7 @@ public class Juego extends InterfaceJuego
 			//para las plantas
 			for(int ite=0; ite < this.plantas.length;ite++) {
 				if (plantas[ite] != null) {
-					if(plantas[ite].seleccionada) {
+					if(plantas[ite].seleccionada && !plantas[ite].plantada) { //seleccionada y si NO está plantada
 						plantas[ite].seleccionada = false; //si la planta no esta seleccionada no la muestra
 						if(entorno.mouseY() < 70 && !plantas[ite].plantada ) {
 							plantas[ite].arrastrar(50, 50);
@@ -184,21 +192,19 @@ public class Juego extends InterfaceJuego
 						int indiceY = cua.cercanoL(entorno.mouseX(), entorno.mouseY()).y;
 				
 						
-						// 2. Verificamos si está ocupado
+						// Verificamos si está ocupado
 						boolean estaOcupado = cua.ocupado[indiceX][indiceY];
 
 						if (!estaOcupado) {
-							// ¡Se puede plantar!
+							//si NO está oscupado se puede plantar
 							wallnuts[ite].arrastrar(cua.corX[indiceX],cua.corY[indiceY]);
 							cua.ocupado[indiceX][indiceY] = true;
 							wallnuts[ite].plantada = true;
 							
 						} else {
-							// No se puede plantar (es verde O está ocupado)
-							// La devolvemos a la barra
+							// no se puede plantar y "rebota"
 							wallnuts[ite].arrastrar(200, 50);
 						}
-						// ***************************************
 					}
 				}
 			}
@@ -266,11 +272,14 @@ public class Juego extends InterfaceJuego
 		if (entorno.numeroDeTick() % 60 == 0) {
 		    for (int i = 0; i < plantas.length; i++) {
 		        if (plantas[i] != null && plantas[i].plantada) {
-		            for (int j = 0; j < balas.length; j++) {
-		                if (balas[j] == null) { // hay lugar libre en el arreglo
-		                    balas[j] = new Bala(plantas[i].x + 30, plantas[i].y, entorno);
-		                    break;
-		                }
+		       
+		        	if (plantas[i].hayZombieEnFila(this.zombies)) {
+		        		for (int j = 0; j < balas.length; j++) {
+		        			if (balas[j] == null) { // hay lugar libre en el arreglo
+		        				balas[j] = new Bala(plantas[i].x + 30, plantas[i].y, entorno);
+		        				break;
+		        			}
+		        		}
 		            }
 		        }
 		    }
@@ -298,6 +307,26 @@ public class Juego extends InterfaceJuego
 		if(!wallnutsNoPlantados(this.wallnuts)) {
 			crearWallNut(this.wallnuts);
 		}
+		
+		//llamamos a crearZombies() cada cierto tiempo para que mueva y dibuje los zombies que ya existen
+				// Hacemos aparecer un zombie nuevo cada 400 "ticks" y arranca a los 5 para que empiece rapido
+				if (entorno.numeroDeTick() % 400 == 5) {
+					crearZombie();
+				}
+				
+				//Movemos y dibujamos a todos los zombies que existan
+				for (int i = 0; i < zombies.length; i++) {
+					if (zombies[i] != null) {
+						zombies[i].mover();
+						zombies[i].dibujar();
+						
+						// Muerte de zombies
+						if (zombies[i].x < 20) {
+							zombies[i] = null;
+							//la logica para que mueran o coman la papa)
+						}
+					}
+				}
 	}
 //plantas
 	public boolean plantasNoPlantadas(Planta[] pl) {
@@ -332,9 +361,29 @@ public class Juego extends InterfaceJuego
 	private void crearWallNut(WallNut[] wn) {
 		for(int x=0; x < wn.length;x++) {
 			if(wn[x] == null) {
-				// Asegurate de poner la posición original de la papa (200, 50)
+			
 				wn[x] = new WallNut(200, 50, entorno); 
 				return;
+			}
+		}
+	}
+	//crea los zombies aleatoriamente
+	private void crearZombie() {
+		// 1. Busca un lugar libre en el arreglo de zombies
+		for (int i=0; i < zombies.length; i++) {
+			if (zombies[i] == null) {
+				
+				// elige numero aleatorios entre 0 y 4
+				int filaAleatoria = (int) (Math.random() * 5); // Esto da 0, 1, 2, 3 ó 4
+				
+				// Obtiene la coordenada 'y' de esa fila 
+				double y = cua.corY[filaAleatoria]; 
+				
+				// Lo crea FUERA de pantalla (a la derecha)
+				double x = 850; // para que arranque afuera
+				
+				zombies[i] = new Zombies(x, y, entorno);
+				return; // Creamos solo un zombie y salimos
 			}
 		}
 	}

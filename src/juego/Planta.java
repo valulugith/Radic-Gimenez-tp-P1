@@ -45,4 +45,20 @@ public class Planta {
 		this.y = yM;
 	}
 	
+	//Para que no dispare si no hay zombeis a la vista
+	/**
+	 * Revisa el arreglo de zombies para ver si hay alguno en la misma fila.
+	 * @param zombies El arreglo completo de zombies del juego.
+	 * @return true si hay un zombie en la fila, false si no.
+	 */
+	public boolean hayZombieEnFila(Zombies[] zombies) {
+		for (Zombies z : zombies) {
+			// Comprueba que el zombie exista y que su 'y' sea igual al 'y' de esta planta
+			if (z != null && z.y == this.y) {
+				return true; // ¡Encontró uno! No necesita seguir buscando.
+			}
+		}
+		return false; // No hay ningún zombie en esta fila.
+	}
+	
 }
